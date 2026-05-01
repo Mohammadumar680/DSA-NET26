@@ -1,0 +1,273 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.wrap{padding:1rem 0}
+.prog-bar-wrap{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:14px 16px;margin-bottom:14px;border:0.5px solid var(--color-border-tertiary)}
+.prog-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.prog-label{font-size:13px;color:var(--color-text-secondary);flex:1}
+.prog-num{font-size:13px;font-weight:500;color:#3C3489}
+.prog-track{height:6px;background:var(--color-border-tertiary);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:#7F77DD;border-radius:3px;transition:width 0.3s}
+.save-status{font-size:11px;color:var(--color-text-secondary);text-align:right;margin-top:6px}
+.topic-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:8px;margin-bottom:14px}
+.t-btn{display:flex;align-items:center;gap:8px;padding:9px 11px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-primary);cursor:pointer;transition:all 0.15s;text-align:left}
+.t-btn:hover{background:var(--color-background-secondary)}
+.t-btn.active{border-color:#7F77DD;background:#EEEDFE}
+.t-btn.done{border-color:#1D9E75;background:#E1F5EE}
+.t-btn.active.done{border-color:#1D9E75;background:#E1F5EE}
+.t-num{font-size:11px;font-weight:500;color:var(--color-text-secondary);min-width:16px}
+.t-btn.active .t-num{color:#534AB7}
+.t-btn.done .t-num{color:#0F6E56}
+.t-name{font-size:12px;font-weight:500;color:var(--color-text-primary);flex:1;line-height:1.3}
+.t-btn.done .t-name{color:#085041}
+.tick{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--color-border-secondary);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;color:transparent;transition:all 0.2s}
+.t-btn.done .tick{background:#1D9E75;border-color:#1D9E75;color:#fff}
+.detail{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden}
+.detail-head{padding:12px 16px;background:#EEEDFE;border-bottom:0.5px solid #AFA9EC;display:flex;align-items:center;gap:10px}
+.detail-title{font-size:15px;font-weight:500;color:#26215C;flex:1}
+.mark-all-btn{font-size:11px;padding:4px 10px;border-radius:20px;border:0.5px solid #7F77DD;background:transparent;color:#534AB7;cursor:pointer}
+.mark-all-btn:hover{background:#CECBF6}
+.sub-list{padding:10px 12px;display:flex;flex-direction:column;gap:5px}
+.sub-item{display:flex;align-items:flex-start;gap:10px;padding:9px 11px;border-radius:var(--border-radius-md);background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);cursor:pointer;transition:all 0.15s}
+.sub-item:hover{background:var(--color-background-secondary)}
+.sub-item.done{background:#E1F5EE;border-color:#5DCAA5}
+.sub-num{font-size:11px;font-weight:500;color:#7F77DD;min-width:26px;margin-top:1px}
+.sub-item.done .sub-num{color:#0F6E56}
+.sub-info{flex:1}
+.sub-name{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:2px}
+.sub-item.done .sub-name{color:#085041}
+.sub-desc{font-size:11px;color:var(--color-text-secondary);line-height:1.4}
+.sub-tick{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--color-border-secondary);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;color:transparent;transition:all 0.2s;margin-top:1px}
+.sub-item.done .sub-tick{background:#1D9E75;border-color:#1D9E75;color:#fff}
+.badges{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.badge{font-size:10px;padding:1px 7px;border-radius:20px;font-weight:500}
+.bi{background:#EEEDFE;color:#3C3489}
+.be{background:#EAF3DE;color:#27500A}
+.bm{background:#FAEEDA;color:#633806}
+.bh{background:#FAECE7;color:#712B13}
+.placeholder{padding:2rem 1rem;text-align:center;color:var(--color-text-secondary);font-size:13px}
+.study-btn{margin:0 12px 12px;padding:9px;width:calc(100% - 24px);border-radius:var(--border-radius-md);font-size:12px;font-weight:500;background:#EEEDFE;color:#3C3489;border:0.5px solid #AFA9EC;cursor:pointer}
+.study-btn:hover{background:#CECBF6}
+</style>
+
+<div class="wrap">
+  <h2 style="position:absolute;left:-9999px">Unit 7 progress tracker with persistent storage</h2>
+
+  <div class="prog-bar-wrap">
+    <div class="prog-row">
+      <span class="prog-label">Overall progress — Unit 7</span>
+      <span class="prog-num" id="prog-num">0 / 0</span>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="save-status" id="save-status">Progress load ho rahi hai...</div>
+  </div>
+
+  <div class="topic-grid" id="grid"></div>
+
+  <div class="detail" id="detail">
+    <div class="placeholder">Upar koi topic select karo — subtopics dikhenge aur tick kar sako ge</div>
+  </div>
+</div>
+
+<script>
+const topics=[
+  {name:"Arrays & Applications",subs:[
+    {name:"Array basics & types",desc:"1D, 2D, multi-dimensional; declaration & memory",tags:["Important","Easy"]},
+    {name:"Memory representation",desc:"Row-major vs column-major; address formula",tags:["Important","Easy"]},
+    {name:"Array operations",desc:"Traversal, insertion, deletion, searching; time complexity",tags:["Important","Easy"]},
+    {name:"2D arrays & matrices",desc:"Matrix add/sub/multiply; transpose",tags:["Medium"]},
+    {name:"Sparse matrix",desc:"Triplet representation; linked list; transpose algorithm",tags:["Important","Medium"]},
+    {name:"Applications of arrays",desc:"Polynomial rep, stack/queue via array, strings",tags:["Easy"]},
+  ]},
+  {name:"Stacks",subs:[
+    {name:"Stack basics (LIFO)",desc:"Push, pop, peek; overflow & underflow",tags:["Important","Easy"]},
+    {name:"Array & linked list impl.",desc:"Array stack with top pointer; dynamic linked stack",tags:["Easy"]},
+    {name:"Infix to postfix/prefix",desc:"Precedence rules; step-by-step algorithm",tags:["Important","Medium"]},
+    {name:"Expression evaluation",desc:"Postfix eval using stack; prefix evaluation",tags:["Important","Medium"]},
+    {name:"Recursion & system stack",desc:"Call stack; stack frame; tail recursion",tags:["Medium"]},
+    {name:"Applications",desc:"Balanced parentheses, DFS, undo, browser history",tags:["Easy"]},
+  ]},
+  {name:"Queues & Priority Queues",subs:[
+    {name:"Queue basics (FIFO)",desc:"Enqueue, dequeue, front, rear; overflow/underflow",tags:["Important","Easy"]},
+    {name:"Circular queue",desc:"Wasted space fix; mod arithmetic wrap-around",tags:["Important","Medium"]},
+    {name:"Deque",desc:"Input/output restricted deque; operations",tags:["Medium"]},
+    {name:"Priority queue",desc:"Min/max heap based; insert & delete-min",tags:["Important","Medium"]},
+    {name:"Heap implementation",desc:"Array repr; heapify-up & heapify-down",tags:["Important","Medium"]},
+    {name:"Applications",desc:"CPU scheduling, BFS, Dijkstra, Huffman",tags:["Easy"]},
+  ]},
+  {name:"Linked Lists",subs:[
+    {name:"Singly linked list",desc:"Node structure; insert at begin/end/pos; delete",tags:["Important","Easy"]},
+    {name:"Doubly linked list",desc:"Prev & next; bidirectional traversal",tags:["Important","Medium"]},
+    {name:"Circular linked list",desc:"Last→head; traversal; Josephus problem",tags:["Medium"]},
+    {name:"Reversal",desc:"Iterative 3-pointer; recursive reversal",tags:["Important","Medium"]},
+    {name:"Polynomial representation",desc:"coeff + exp per node; polynomial addition",tags:["Medium"]},
+    {name:"Applications",desc:"LRU cache, adjacency list, hash chaining",tags:["Easy"]},
+  ]},
+  {name:"Trees & Forest",subs:[
+    {name:"Tree terminology",desc:"Root, leaf, height, depth, degree, parent, child",tags:["Important","Easy"]},
+    {name:"Binary tree types",desc:"Full, complete, perfect, skewed; properties",tags:["Important","Easy"]},
+    {name:"Tree traversals",desc:"Inorder, Preorder, Postorder; Level-order BFS",tags:["Important","Medium"]},
+    {name:"Forest to binary tree",desc:"Left-child right-sibling repr; conversion",tags:["Medium"]},
+    {name:"Expression tree",desc:"Build from postfix; evaluate expression",tags:["Medium"]},
+    {name:"Applications",desc:"File system, XML parsing, decision trees",tags:["Easy"]},
+  ]},
+  {name:"Threaded Binary Tree",subs:[
+    {name:"Concept of threading",desc:"Null pointers → inorder predecessor/successor",tags:["Medium"]},
+    {name:"Right-threaded tree",desc:"Right null → inorder successor; traversal",tags:["Important","Medium"]},
+    {name:"Left-threaded tree",desc:"Left null → inorder predecessor",tags:["Medium"]},
+    {name:"Fully threaded tree",desc:"Both pointers threaded; header node",tags:["Hard"]},
+    {name:"Traversal without stack",desc:"Inorder using thread links; algorithm",tags:["Important","Medium"]},
+  ]},
+  {name:"Binary Search Tree",subs:[
+    {name:"BST property",desc:"Left < root < right; in all subtrees",tags:["Important","Easy"]},
+    {name:"Search operation",desc:"Recursive & iterative; O(h) complexity",tags:["Important","Easy"]},
+    {name:"Insertion",desc:"Finding correct position; insert new node",tags:["Important","Easy"]},
+    {name:"Deletion (3 cases)",desc:"Leaf; one child; two children (inorder succ.)",tags:["Important","Medium"]},
+    {name:"Successor & predecessor",desc:"Inorder succ = leftmost of right subtree",tags:["Medium"]},
+    {name:"Time complexity",desc:"O(log n) avg; O(n) worst for skewed tree",tags:["Important","Medium"]},
+  ]},
+  {name:"AVL Tree",subs:[
+    {name:"Balance factor",desc:"BF = h(L)-h(R); must be -1, 0, or +1",tags:["Important","Medium"]},
+    {name:"LL rotation",desc:"Single right rotation; left of left insert",tags:["Important","Hard"]},
+    {name:"RR rotation",desc:"Single left rotation; right of right insert",tags:["Important","Hard"]},
+    {name:"LR rotation",desc:"Left rotate child → right rotate node",tags:["Important","Hard"]},
+    {name:"RL rotation",desc:"Right rotate child → left rotate node",tags:["Important","Hard"]},
+    {name:"Insert & delete",desc:"Insert → check BF → rebalance; delete cases",tags:["Important","Hard"]},
+  ]},
+  {name:"B Tree, B+, B* Tree",subs:[
+    {name:"B Tree structure",desc:"Order m; min/max keys; all leaves same level",tags:["Important","Medium"]},
+    {name:"B Tree insertion",desc:"Insert → overflow → split → promote middle",tags:["Important","Hard"]},
+    {name:"B Tree deletion",desc:"Borrow from sibling or merge; underflow",tags:["Hard"]},
+    {name:"B+ Tree",desc:"All data in leaves; leaves linked; index-only internal nodes",tags:["Important","Hard"]},
+    {name:"B+ vs B Tree",desc:"Sequential access; range queries; key differences",tags:["Important","Medium"]},
+    {name:"B* Tree",desc:"2/3 full minimum; delayed splitting via redistribution",tags:["Hard"]},
+  ]},
+  {name:"Graphs",subs:[
+    {name:"Graph terminology",desc:"Vertices, edges, degree, path, cycle, weighted",tags:["Important","Easy"]},
+    {name:"Adjacency matrix",desc:"V×V matrix; O(V²) space; fast edge lookup",tags:["Important","Easy"]},
+    {name:"Adjacency list",desc:"Array of lists; O(V+E) space; sparse graphs",tags:["Important","Easy"]},
+    {name:"Types of graphs",desc:"Directed, weighted, DAG, bipartite, complete",tags:["Medium"]},
+    {name:"Graph properties",desc:"Connected components, strongly connected, Eulerian",tags:["Medium"]},
+    {name:"Topological sort",desc:"Kahn's (BFS); DFS-based topological ordering",tags:["Important","Medium"]},
+  ]},
+  {name:"Sorting Algorithms",subs:[
+    {name:"Bubble sort",desc:"Adjacent swaps; O(n²) worst; O(n) best; stable",tags:["Easy"]},
+    {name:"Selection sort",desc:"Find min, place front; O(n²) always; unstable",tags:["Easy"]},
+    {name:"Insertion sort",desc:"O(n²) worst; O(n) best; stable; nearly sorted",tags:["Easy"]},
+    {name:"Merge sort",desc:"D&C; O(n log n) always; stable; O(n) space",tags:["Important","Medium"]},
+    {name:"Quick sort",desc:"Pivot; O(n log n) avg; O(n²) worst; in-place",tags:["Important","Medium"]},
+    {name:"Heap sort",desc:"Max-heap then extract; O(n log n); in-place",tags:["Important","Medium"]},
+    {name:"Counting & Radix sort",desc:"Non-comparison; O(n+k); stable; integers only",tags:["Medium"]},
+    {name:"Stability comparison",desc:"Stable: bubble, insertion, merge; full comparison",tags:["Important","Medium"]},
+  ]},
+  {name:"Searching & Hashing",subs:[
+    {name:"Linear search",desc:"O(n); unsorted arrays; sequential scan",tags:["Easy"]},
+    {name:"Binary search",desc:"O(log n); sorted array; recursive & iterative",tags:["Important","Easy"]},
+    {name:"Hash functions",desc:"Division, multiplication, folding, mid-square",tags:["Important","Medium"]},
+    {name:"Chaining (collision)",desc:"Linked list per slot; load factor; O(1+α) avg",tags:["Important","Medium"]},
+    {name:"Open addressing",desc:"Linear/quadratic probing; double hashing; clustering",tags:["Important","Medium"]},
+    {name:"Load factor & rehashing",desc:"α = n/m; when to rehash; performance drop",tags:["Medium"]},
+  ]},
+];
+
+const STORAGE_KEY = "ugcnet_unit7_progress_v1";
+const bmap={Important:"bi",Easy:"be",Medium:"bm",Hard:"bh"};
+let checked = {};
+let activeIdx = -1;
+let totalSubs = 0;
+
+topics.forEach(t => totalSubs += t.subs.length);
+
+async function loadProgress(){
+  try{
+    const res = await window.storage.get(STORAGE_KEY);
+    if(res && res.value){
+      checked = JSON.parse(res.value);
+    }
+  }catch(e){ checked={}; }
+  document.getElementById("save-status").textContent = "Progress load ho gayi — browser band karne par bhi saved rahegi";
+  render();
+  if(activeIdx >= 0) renderDetail(activeIdx);
+}
+
+async function saveProgress(){
+  document.getElementById("save-status").textContent = "Saving...";
+  try{
+    await window.storage.set(STORAGE_KEY, JSON.stringify(checked));
+    document.getElementById("save-status").textContent = "Saved — agle session mein bhi rahega";
+  }catch(e){
+    document.getElementById("save-status").textContent = "Save nahi ho saka — try again";
+  }
+}
+
+function getKey(ti, si){ return ti+"_"+si; }
+
+function countDone(){
+  let d=0;
+  topics.forEach((t,ti)=>t.subs.forEach((_,si)=>{ if(checked[getKey(ti,si)]) d++; }));
+  return d;
+}
+
+function topicDone(ti){
+  return topics[ti].subs.every((_,si)=>checked[getKey(ti,si)]);
+}
+
+function topicPartial(ti){
+  return topics[ti].subs.some((_,si)=>checked[getKey(ti,si)]) && !topicDone(ti);
+}
+
+function render(){
+  const done = countDone();
+  const pct = totalSubs ? Math.round(done/totalSubs*100) : 0;
+  document.getElementById("prog-num").textContent = done+" / "+totalSubs;
+  document.getElementById("prog-fill").style.width = pct+"%";
+
+  const grid = document.getElementById("grid");
+  grid.innerHTML="";
+  topics.forEach((t,i)=>{
+    const btn=document.createElement("div");
+    const isDone=topicDone(i);
+    btn.className="t-btn"+(i===activeIdx?" active":"")+(isDone?" done":"");
+    const subDone=t.subs.filter((_,si)=>checked[getKey(i,si)]).length;
+    btn.innerHTML=`<span class="t-num">${i+1}.</span><span class="t-name">${t.name}</span><span class="tick">${isDone?"✓":""}</span>`;
+    if(isDone) btn.querySelector(".tick").textContent="✓";
+    btn.onclick=()=>{ activeIdx=i; render(); renderDetail(i); };
+    grid.appendChild(btn);
+  });
+}
+
+function renderDetail(ti){
+  const t=topics[ti];
+  const allDone=topicDone(ti);
+  let html=`<div class="detail-head"><div class="detail-title">${ti+1}. ${t.name}</div><button class="mark-all-btn" onclick="markAll(${ti},${!allDone})">${allDone?"Sab untick karo":"Sab tick karo"}</button></div><div class="sub-list">`;
+  t.subs.forEach((s,si)=>{
+    const k=getKey(ti,si);
+    const done=!!checked[k];
+    const badges=s.tags.map(tg=>`<span class="badge ${bmap[tg]||"bm"}">${tg}</span>`).join("");
+    html+=`<div class="sub-item${done?" done":""}" onclick="toggle(${ti},${si})">
+      <div class="sub-num">${ti+1}.${si+1}</div>
+      <div class="sub-info"><div class="sub-name">${s.name}</div><div class="sub-desc">${s.desc}</div><div class="badges">${badges}</div></div>
+      <div class="sub-tick">${done?"✓":""}</div>
+    </div>`;
+  });
+  html+=`</div><button class="study-btn" onclick="sendPrompt('${t.name} ka pura explanation do UGC NET ke liye with examples ↗')">Is topic ko detail mein padhao ↗</button>`;
+  document.getElementById("detail").innerHTML=html;
+}
+
+function toggle(ti,si){
+  const k=getKey(ti,si);
+  checked[k]=!checked[k];
+  saveProgress();
+  render();
+  renderDetail(ti);
+}
+
+function markAll(ti, val){
+  topics[ti].subs.forEach((_,si)=>{ checked[getKey(ti,si)]=val; });
+  saveProgress();
+  render();
+  renderDetail(ti);
+}
+
+loadProgress();
+</script>
